@@ -1,6 +1,6 @@
 {
-  "name": "My Paraiso",
-  "short_name": "My Paraiso",
+  "name": "Mi Paraiso",
+  "short_name": "Mi Paraiso",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
