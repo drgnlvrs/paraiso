@@ -23,5 +23,60 @@ src="https://script.google.com/macros/s/AKfycby_J_LoIlEipfRHj1Gcq2OFgjLhZLZg3b-w
 title="Mi Paraiso"
 allow="geolocation; clipboard-write; fullscreen"
 referrerpolicy="no-referrer"></iframe>
+<script>
+/* Neighbor chat helpers (Nov 2026): push notifications, unread count in the tab title, and
+   opening a chat from a notification. The dashboard inside the frame asks for these. */
+(function () {
+  var V = 'https://www.gstatic.com/firebasejs/10.14.1/';
+  var MP = { src: null, cfg: null, chat: new URLSearchParams(location.search).get('chat') };
+  function send(m) { try { if (MP.src) MP.src.postMessage(m, '*'); } catch (e) {} }
+  function load(f, done) { var s = document.createElement('script'); s.src = V + f; s.onload = done; s.onerror = function () { send({ mp: 'push-error' }); }; document.head.appendChild(s); }
+  function sdk(done) {
+    if (window.firebase && firebase.messaging) return done();
+    load('firebase-app-compat.js', function () { load('firebase-messaging-compat.js', done); });
+  }
+  function messaging(done) {
+    if (!MP.cfg || !('serviceWorker' in navigator) || !('Notification' in window)) return send({ mp: 'push-error' });
+    sdk(function () {
+      try {
+        if (!firebase.apps.length) firebase.initializeApp(MP.cfg);
+        navigator.serviceWorker.register('firebase-messaging-sw.js?c=' + encodeURIComponent(JSON.stringify(MP.cfg)), { scope: './' })
+          .then(function (reg) { done(firebase.messaging(), reg); })
+          .catch(function () { send({ mp: 'push-error' }); });
+      } catch (e) { send({ mp: 'push-error' }); }
+    });
+  }
+  function pushOn() { try { return Notification.permission === 'granted' && localStorage.getItem('mpPush') === '1'; } catch (e) { return false; } }
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || typeof d !== 'object' || !d.mp || !/\.googleusercontent\.com$/.test(e.origin)) return;
+    if (d.mp === 'hello') {
+      MP.src = e.source; if (d.cfg) MP.cfg = d.cfg;
+      send({ mp: 'wrapper', pushOn: pushOn(), chat: MP.chat }); MP.chat = null;
+      if (MP.cfg && pushOn()) messaging(function () {}); // keep the service worker current
+    } else if (d.mp === 'title') {
+      document.title = (d.n > 0 ? '(' + d.n + ') ' : '') + 'Mi Paraiso';
+    } else if (d.mp === 'push-enable') {
+      Notification.requestPermission().then(function (p) {
+        if (p !== 'granted') return send({ mp: 'push-error', denied: p === 'denied' });
+        messaging(function (m, reg) {
+          m.getToken({ serviceWorkerRegistration: reg }).then(function (t) {
+            if (!t) return send({ mp: 'push-error' });
+            try { localStorage.setItem('mpPush', '1'); } catch (x) {}
+            send({ mp: 'push-token', token: t, on: true });
+          }).catch(function () { send({ mp: 'push-error' }); });
+        });
+      });
+    } else if (d.mp === 'push-disable') {
+      messaging(function (m, reg) {
+        m.getToken({ serviceWorkerRegistration: reg }).then(function (t) {
+          try { localStorage.removeItem('mpPush'); } catch (x) {}
+          if (t) { send({ mp: 'push-token', token: t, on: false }); m.deleteToken(); }
+        }).catch(function () {});
+      });
+    }
+  });
+})();
+</script>
 </body>
 </html>
