@@ -2,81 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noarchive">
-<meta name="theme-color" content="#0f172a">
-<meta name="apple-mobile-web-app-title" content="Mi Paraiso">
-<meta name="application-name" content="Mi Paraiso">
 <title>Mi Paraiso</title>
-  <link rel="icon" href="favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-  <link rel="manifest" href="manifest.webmanifest">
-<style>
-html, body { margin: 0; padding: 0; height: 100%; background: #0f172a; overflow: hidden; }
-iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
-</style>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="canonical" href="https://paraiso2.github.io/">
+<script>
+/* Mi Paraiso moved to https://paraiso2.github.io/ (Nov 20, 2026). Send visitors there (keeping ?chat=... links)
+   and remove this old address's notification worker so devices don't get each notification twice. */
+try { if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); }); } catch (e) {}
+location.replace('https://paraiso2.github.io/' + location.search + location.hash);
+</script>
+<meta http-equiv="refresh" content="1; url=https://paraiso2.github.io/">
+<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f172a;color:#e2e8f0;font:16px system-ui,sans-serif;text-align:center;padding:20px}a{color:#38bdf8}</style>
 </head>
 <body>
-<iframe
-src="https://script.google.com/macros/s/AKfycby_J_LoIlEipfRHj1Gcq2OFgjLhZLZg3b-wUCPukDhOA_hLUPUNntW1WHeYYO0GMocpOw/exec"
-title="Mi Paraiso"
-allow="geolocation; clipboard-write; fullscreen"
-referrerpolicy="no-referrer"></iframe>
-<script>
-/* Neighbor chat helpers (Nov 2026): push notifications, unread count in the tab title, and
-   opening a chat from a notification. The dashboard inside the frame asks for these. */
-(function () {
-  var V = 'https://www.gstatic.com/firebasejs/10.14.1/';
-  var MP = { src: null, cfg: null, chat: new URLSearchParams(location.search).get('chat') };
-  function send(m) { try { if (MP.src) MP.src.postMessage(m, '*'); } catch (e) {} }
-  function load(f, done) { var s = document.createElement('script'); s.src = V + f; s.onload = done; s.onerror = function () { send({ mp: 'push-error' }); }; document.head.appendChild(s); }
-  function sdk(done) {
-    if (window.firebase && firebase.messaging) return done();
-    load('firebase-app-compat.js', function () { load('firebase-messaging-compat.js', done); });
-  }
-  function messaging(done) {
-    if (!MP.cfg || !('serviceWorker' in navigator) || !('Notification' in window)) return send({ mp: 'push-error' });
-    sdk(function () {
-      try {
-        if (!firebase.apps.length) firebase.initializeApp(MP.cfg);
-        navigator.serviceWorker.register('firebase-messaging-sw.js?c=' + encodeURIComponent(JSON.stringify(MP.cfg)), { scope: './' })
-          .then(function (reg) { done(firebase.messaging(), reg); })
-          .catch(function () { send({ mp: 'push-error' }); });
-      } catch (e) { send({ mp: 'push-error' }); }
-    });
-  }
-  function pushOn() { try { return Notification.permission === 'granted' && localStorage.getItem('mpPush') === '1'; } catch (e) { return false; } }
-  window.addEventListener('message', function (e) {
-    var d = e.data;
-    if (!d || typeof d !== 'object' || !d.mp || !/\.googleusercontent\.com$/.test(e.origin)) return;
-    if (d.mp === 'hello') {
-      MP.src = e.source; if (d.cfg) MP.cfg = d.cfg;
-      send({ mp: 'wrapper', pushOn: pushOn(), chat: MP.chat }); MP.chat = null;
-      if (MP.cfg && pushOn()) messaging(function () {}); // keep the service worker current
-    } else if (d.mp === 'title') {
-      document.title = (d.n > 0 ? '(' + d.n + ') ' : '') + 'Mi Paraiso';
-    } else if (d.mp === 'push-enable') {
-      Notification.requestPermission().then(function (p) {
-        if (p !== 'granted') return send({ mp: 'push-error', denied: p === 'denied' });
-        messaging(function (m, reg) {
-          m.getToken({ serviceWorkerRegistration: reg }).then(function (t) {
-            if (!t) return send({ mp: 'push-error' });
-            try { localStorage.setItem('mpPush', '1'); } catch (x) {}
-            send({ mp: 'push-token', token: t, on: true });
-          }).catch(function () { send({ mp: 'push-error' }); });
-        });
-      });
-    } else if (d.mp === 'push-disable') {
-      messaging(function (m, reg) {
-        m.getToken({ serviceWorkerRegistration: reg }).then(function (t) {
-          try { localStorage.removeItem('mpPush'); } catch (x) {}
-          if (t) { send({ mp: 'push-token', token: t, on: false }); m.deleteToken(); }
-        }).catch(function () {});
-      });
-    }
-  });
-})();
-</script>
+<p>Mi Paraiso has moved · Mi Paraiso se mudó<br><a href="https://paraiso2.github.io/">paraiso2.github.io</a></p>
 </body>
 </html>
